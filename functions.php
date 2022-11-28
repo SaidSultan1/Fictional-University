@@ -19,3 +19,4 @@ function university_features(){
     register_nav_menu('headerMenuLocation', 'Header Menu Location');
 }
 add_action('after_setup_theme', 'university_features');
+
