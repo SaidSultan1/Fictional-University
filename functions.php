@@ -38,3 +38,26 @@ function university_adjust_queries($query) {
     }
 }
 add_action('pre_get_posts', 'university_adjust_queries');
+
+// function university_1()
+// {
+//     $temp = 'hello world';
+//     // $temp = apply_filters('hello',$temp);
+//     echo $temp;
+
+// }
+// add_action('wp_footer', 'university_1');
+// add_action('wp_head', 'university_1');
+
+// function university_2($var)
+// {
+//     $var .= ' said ';
+//     //  $var = $var.'';
+//     return $var;
+// }
+// add_filter('hello', 'university_2',1,1);
+
+function  test_func(){
+    echo 'Said';
+}
+add_action('wp_head','test_func');
