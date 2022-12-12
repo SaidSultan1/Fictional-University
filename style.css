@@ -4,3 +4,6 @@ Author: Said Sultan
 Version: 1.0
 */
 
+.display-none{
+    display: none !important;
+}
