@@ -2064,108 +2064,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _css_style_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../css/style.scss */ "./css/style.scss");
 /* harmony import */ var _modules_MobileMenu__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/MobileMenu */ "./src/modules/MobileMenu.js");
 /* harmony import */ var _modules_HeroSlider__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/HeroSlider */ "./src/modules/HeroSlider.js");
-/* harmony import */ var _modules_GoogleMap__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/GoogleMap */ "./src/modules/GoogleMap.js");
-/* harmony import */ var _modules_Search__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/Search */ "./src/modules/Search.js");
-/* harmony import */ var _modules_MyNotes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/MyNotes */ "./src/modules/MyNotes.js");
+/* harmony import */ var _modules_Search__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/Search */ "./src/modules/Search.js");
+/* harmony import */ var _modules_MyNotes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/MyNotes */ "./src/modules/MyNotes.js");
 
 
 // Our modules / classes
 
 
-
+// import GoogleMap from "./modules/GoogleMap"
 
 
 
 // Instantiate a new object using our modules/classes
 const mobileMenu = new _modules_MobileMenu__WEBPACK_IMPORTED_MODULE_1__["default"]();
 const heroSlider = new _modules_HeroSlider__WEBPACK_IMPORTED_MODULE_2__["default"]();
-const googleMap = new _modules_GoogleMap__WEBPACK_IMPORTED_MODULE_3__["default"]();
-const search = new _modules_Search__WEBPACK_IMPORTED_MODULE_4__["default"]();
-const myNotes = new _modules_MyNotes__WEBPACK_IMPORTED_MODULE_5__["default"]();
-
-/***/ }),
-
-/***/ "./src/modules/GoogleMap.js":
-/*!**********************************!*\
-  !*** ./src/modules/GoogleMap.js ***!
-  \**********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-class GMap {
-  constructor() {
-    document.querySelectorAll(".acf-map").forEach(el => {
-      this.new_map(el);
-    });
-  }
-  new_map($el) {
-    var $markers = $el.querySelectorAll(".marker");
-    var args = {
-      zoom: 16,
-      center: new google.maps.LatLng(0, 0),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    var map = new google.maps.Map($el, args);
-    map.markers = [];
-    var that = this;
-
-    // add markers
-    $markers.forEach(function (x) {
-      that.add_marker(x, map);
-    });
-
-    // center map
-    this.center_map(map);
-  } // end new_map
-
-  add_marker($marker, map) {
-    var latlng = new google.maps.LatLng($marker.getAttribute("data-lat"), $marker.getAttribute("data-lng"));
-    var marker = new google.maps.Marker({
-      position: latlng,
-      map: map
-    });
-    map.markers.push(marker);
-
-    // if marker contains HTML, add it to an infoWindow
-    if ($marker.innerHTML) {
-      // create info window
-      var infowindow = new google.maps.InfoWindow({
-        content: $marker.innerHTML
-      });
-
-      // show info window when marker is clicked
-      google.maps.event.addListener(marker, "click", function () {
-        infowindow.open(map, marker);
-      });
-    }
-  } // end add_marker
-
-  center_map(map) {
-    var bounds = new google.maps.LatLngBounds();
-
-    // loop through all markers and create bounds
-    map.markers.forEach(function (marker) {
-      var latlng = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
-      bounds.extend(latlng);
-    });
-
-    // only 1 marker?
-    if (map.markers.length == 1) {
-      // set center of map
-      map.setCenter(bounds.getCenter());
-      map.setZoom(16);
-    } else {
-      // fit to bounds
-      map.fitBounds(bounds);
-    }
-  } // end center_map
-}
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (GMap);
+// const googleMap = new GoogleMap()
+const search = new _modules_Search__WEBPACK_IMPORTED_MODULE_3__["default"]();
+const myNotes = new _modules_MyNotes__WEBPACK_IMPORTED_MODULE_4__["default"]();
 
 /***/ }),
 
@@ -2260,15 +2175,67 @@ class MyNotes {
     this.events();
   }
   events() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".delete-note").on("click", this.deleteNote);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".delete-note").on("click", this.deletNote.bind(this));
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".edit-note").on("click", this.editNote.bind(this));
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".update-note").on("click", this.updateNote.bind(this));
   }
 
   // Methods will go here
-  deleteNote() {
+
+  editNote(e) {
+    var thisNote = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).parents("li");
+    if (thisNote.data("state") == "editable") {
+      this.makeNoteReadOnly(thisNote);
+    } else {
+      this.makeNoteEditable(thisNote);
+    }
+  }
+  makeNoteEditable(thisNote) {
+    thisNote.find(".edit-note").html('<i class="fa fa-times" aria-hidden="true"></i> Cancel</span>');
+    thisNote.find(".note-title-field, .note-body-field").removeAttr("readonly").addClass("note-active-field");
+    thisNote.find(".update-note").addClass("update-note--visible");
+    thisNote.data("state", "editable");
+  }
+  makeNoteReadOnly(thisNote) {
+    thisNote.find(".edit-note").html('<i class="fa fa-pencil" aria-hidden="true"></i> Edit</span>');
+    thisNote.find(".note-title-field, .note-body-field").attr("readonly", "readonly").removeClass("note-active-field");
+    thisNote.find(".update-note").removeClass("update-note--visible");
+    thisNote.data("state", "cancel");
+  }
+  deletNote(e) {
+    var thisNote = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).parents("li");
     jquery__WEBPACK_IMPORTED_MODULE_0___default().ajax({
-      url: universityData.root_url + '/wp-json/wp/v2/note/123',
+      beforeSend: xhr => {
+        xhr.setRequestHeader('X-WP-Nonce', universityData.nonce);
+      },
+      url: universityData.root_url + '/wp-json/wp/v2/note/' + thisNote.data('id'),
       type: 'DELETE',
       success: response => {
+        thisNote.slideUp();
+        console.log("congrats");
+        console.log(response);
+      },
+      error: response => {
+        console.log("sorry");
+        console.log(response);
+      }
+    });
+  }
+  updateNote(e) {
+    var thisNote = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).parents("li");
+    var ourUpdatedPost = {
+      'title': thisNote.find(".note-title-field").val(),
+      'content': thisNote.find(".note-body-field").val()
+    };
+    jquery__WEBPACK_IMPORTED_MODULE_0___default().ajax({
+      beforeSend: xhr => {
+        xhr.setRequestHeader('X-WP-Nonce', universityData.nonce);
+      },
+      url: universityData.root_url + '/wp-json/wp/v2/note/' + thisNote.data('id'),
+      type: 'POST',
+      data: ourUpdatedPost,
+      success: response => {
+        this.makeNoteReadOnly(thisNote);
         console.log("congrats");
         console.log(response);
       },
