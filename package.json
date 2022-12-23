@@ -14,11 +14,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@glidejs/glide": "^3.4.1",
-    "axios": "^0.21.1",
+    "@glidejs/glide": "^3.6.0",
+    "@wordpress/scripts": "^25.0.0",
+    "axios": "^1.2.1",
     "normalize.css": "^8.0.1"
-  },
-  "devDependencies": {
-    "@wordpress/scripts": "^25.0.0"
   }
 }
