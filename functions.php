@@ -6,6 +6,10 @@ function university_custom_rest() {
   register_rest_field('post', 'authorName', array(
     'get_callback' => function() {return get_the_author();}
   ));
+
+  register_rest_field('note', 'userNoteCount', array(
+    'get_callback' => function() {return count_user_posts(get_current_user_id(), 'note');}
+  ));
 }
 
 add_action('rest_api_init', 'university_custom_rest');
@@ -21,7 +25,7 @@ function pageBanner($args = NULL) {
   }
 
   if (!$args['photo']) {
-    if (get_field('page_banner_background_image') AND !is_archive() AND !is_home() ) {
+    if (get_field('page_banner_background_image') && !is_archive() && !is_home() ) {
       $args['photo'] = get_field('page_banner_background_image')['sizes']['pageBanner'];
     } else {
       $args['photo'] = get_theme_file_uri('/images/ocean.jpg');
@@ -68,17 +72,17 @@ function university_features() {
 add_action('after_setup_theme', 'university_features');
 
 function university_adjust_queries($query) {
-  if (!is_admin() AND is_post_type_archive('campus') AND $query->is_main_query()) {
+  if (!is_admin() && is_post_type_archive('campus') && $query->is_main_query()) {
     $query->set('posts_per_page', -1);
   }
 
-  if (!is_admin() AND is_post_type_archive('program') AND $query->is_main_query()) {
+  if (!is_admin() && is_post_type_archive('program') && $query->is_main_query()) {
     $query->set('orderby', 'title');
     $query->set('order', 'ASC');
     $query->set('posts_per_page', -1);
   }
 
-  if (!is_admin() AND is_post_type_archive('event') AND $query->is_main_query()) {
+  if (!is_admin() && is_post_type_archive('event') && $query->is_main_query()) {
     $today = date('Ymd');
     $query->set('meta_key', 'event_date');
     $query->set('orderby', 'meta_value_num');
@@ -109,7 +113,7 @@ add_action('admin_init', 'redirectSubsToFrontend');
 function redirectSubsToFrontend() {
   $ourCurrentUser = wp_get_current_user();
 
-  if (count($ourCurrentUser->roles) == 1 AND $ourCurrentUser->roles[0] == 'subscriber') {
+  if (count($ourCurrentUser->roles) == 1 && $ourCurrentUser->roles[0] == 'subscriber') {
     wp_redirect(site_url('/'));
     exit;
   }
@@ -120,7 +124,7 @@ add_action('wp_loaded', 'noSubsAdminBar');
 function noSubsAdminBar() {
   $ourCurrentUser = wp_get_current_user();
 
-  if (count($ourCurrentUser->roles) == 1 AND $ourCurrentUser->roles[0] == 'subscriber') {
+  if (count($ourCurrentUser->roles) == 1 && $ourCurrentUser->roles[0] == 'subscriber') {
     show_admin_bar(false);
   }
 }
@@ -145,4 +149,24 @@ add_filter('login_headertitle', 'ourLoginTitle');
 
 function ourLoginTitle() {
   return get_bloginfo('name');
+}
+
+// Force note posts to be private
+add_filter('wp_insert_post_data', 'makeNotePrivate', 10, 2);
+
+function makeNotePrivate($data, $postarr) {
+  if ($data['post_type'] == 'note') {
+    if(count_user_posts(get_current_user_id(), 'note') > 4 && !$postarr['ID']) {
+      die("You have reached your note limit.");
+    }
+
+    $data['post_content'] = sanitize_textarea_field($data['post_content']);
+    $data['post_title'] = sanitize_text_field($data['post_title']);
+  }
+
+  if($data['post_type'] == 'note' && $data['post_status'] != 'trash') {
+    $data['post_status'] = "private";
+  }
+  
+  return $data;
 }
